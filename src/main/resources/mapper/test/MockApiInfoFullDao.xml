@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.test.dao.MockApiInfoFullDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.test.entity.MockApiInfoFullEntity" id="testMockApiinfofullMap">
+        <result property="url" column="url"/>
+        <result property="method" column="method"/>
+        <result property="headers" column="headers"/>
+        <result property="cookies" column="cookies"/>
+        <result property="xpaths" column="xpaths"/>
+        <result property="forms" column="forms"/>
+        <result property="file" column="file"/>
+        <result property="queries" column="queries"/>
+        <result property="json" column="json"/>
+        <result property="factory" column="factory"/>
+        <result property="text" column="text"/>
+        <result property="jsonPaths" column="json_paths"/>
+        <result property="version" column="version"/>
+        <result property="pathResource" column="path_resource"/>
+        <result property="remark" column="remark"/>
+        <result property="addBy" column="add_by"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="project" column="project"/>
+        <result property="module" column="module"/>
+    </resultMap>
+
+
+
+
+    <select id="queryObject" resultType="io.renren.modules.test.entity.MockApiInfoFullEntity">
+        select * from test_mock_http_api_info_full where url = #{value}
+    </select>
+
+    <select id="queryByMethod" resultType="io.renren.modules.test.entity.MockApiInfoFullEntity">
+        select * from test_mock_http_api_info_full where method = #{method}
+    </select>
+
+
+    <select id="queryByUser" resultType="io.renren.modules.test.entity.MockApiInfoFullEntity">
+        select * from test_mock_http_api_info_full where add_by = #{user}
+    </select>
+
+
+    <select id="queryAll" resultType="io.renren.modules.test.entity.MockApiInfoFullEntity">
+        select * from test_mock_http_api_info_full
+    </select>
+
+
+
+
+    <select id="queryList" resultType="io.renren.modules.test.entity.MockApiInfoFullEntity">
+        select * from test_mock_http_api_info_full
+        <where>
+            <if test="url != null and url.trim() != ''">
+                url like concat('%', #{url}, '%')
+            </if>
+            <if test="method != null and method.trim() != ''">
+                method like concat('%', #{method}, '%')
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by add_time desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null ">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        select count(1) from test_mock_http_api_info_full
+        <where>
+            <if test="url != null and url.trim() != ''">
+                url like concat('%', #{url}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="queryTotalByMethod" resultType="int">
+        select count(1) from test_mock_http_api_info_full where method = #{method}
+    </select>
+    
+    
+
+    <insert id="save" parameterType="io.renren.modules.test.entity.MockApiInfoFullEntity" useGeneratedKeys="true"
+            keyProperty="url">
+        insert into test_mock_http_api_info_full
+        (
+        `url`,
+        `method`,
+        `headers`,
+        `cookies`,
+        `xpaths`,
+        `forms`,
+        `file`,
+        `queries`,
+        `json`,
+        `factory`,
+        `text`,
+        `json_paths`,
+        `version`,
+        `status`,
+        `path_resource`,
+        `remark`,
+        `add_by`,
+        `update_by`,
+        `project`,
+        `module`
+        )
+        values
+        (
+        #{url},
+        #{method},
+        #{headers},
+        #{cookies},
+        #{xpaths},
+        #{forms},
+        #{file},
+        #{queries},
+        #{json},
+        #{factory},
+        #{text},
+        #{jsonPaths},
+        #{version},
+        #{status},
+        #{pathResource},
+        #{remark},
+        #{addBy},
+        #{updateBy},
+        #{project},
+        #{module}
+        )
+    </insert>
+
+    <update id="update" parameterType="io.renren.modules.test.entity.MockApiInfoFullEntity">
+        update test_mock_http_api_info_full
+        <set>
+            <if test="url != null">`url` = #{url},</if>
+            <if test="method != null">`method` = #{method},</if>
+            <if test="headers != null">`headers` = #{headers},</if>
+            <if test="cookies != null">`cookies` = #{cookies},</if>
+            <if test="xpaths != null">`xpaths` = #{xpaths},</if>
+            <if test="forms != null">`forms` = #{forms},</if>
+            <if test="file != null">`file` = #{file},</if>
+            <if test="queries != null">`queries` = #{queries},</if>
+            <if test="json != null">`json` = #{json},</if>
+            <if test="factory != null">`factory` = #{factory},</if>
+            <if test="text != null">`text` = #{text},</if>
+            <if test="jsonPaths != null">`json_paths` = #{jsonPaths},</if>
+            <if test="version != null">`version` = #{version},</if>
+            <if test="status != null">`status` = #{status},</if>
+            <if test="pathResource != null">`path_resource` = #{pathResource},</if>
+            <if test="remark != null">`remark` = #{remark},</if>
+            <if test="addBy != null">`add_by` = #{addBy},</if>
+            <if test="updateBy != null">`update_by` = #{updateBy},</if>
+            <if test="project != null">`project` = #{project},</if>
+            <if test="module != null">`module` = #{module},</if>
+        </set>
+        where url = #{url}
+    </update>
+
+
+    <insert id="insertOrUpdate" parameterType="io.renren.modules.test.entity.MockApiInfoFullEntity" useGeneratedKeys="true"
+            keyProperty="url">
+        insert into test_mock_http_api_info_full
+        (
+        `url`,
+        `method`,
+        `headers`,
+        `cookies`,
+        `xpaths`,
+        `forms`,
+        `file`,
+        `queries`,
+        `json`,
+        `factory`,
+        `text`,
+        `json_paths`,
+        `version`,
+        `status`,
+        `path_resource`,
+        `remark`,
+        `add_by`,
+        `update_by`,
+        `project`,
+        `module`
+        )
+        values
+        (
+        #{url},
+        #{method},
+        #{headers},
+        #{cookies},
+        #{xpaths},
+        #{forms},
+        #{file},
+        #{queries},
+        #{json},
+        #{factory},
+        #{text},
+        #{jsonPaths},
+        #{version},
+        #{status},
+        #{pathResource},
+        #{remark},
+        #{addBy},
+        #{updateBy},
+        #{project},
+        #{module}
+        )
+        ON DUPLICATE KEY UPDATE
+        method=VALUES(method),
+        headers=VALUES(headers),
+        cookies=VALUES(cookies),
+        xpaths=VALUES(xpaths),
+        forms=VALUES(forms),
+        file=VALUES(file),
+        queries=VALUES(queries),
+        json=VALUES(json),
+        factory=VALUES(factory),
+        text=VALUES(text),
+        json_paths=VALUES(json_paths),
+        version=VALUES(version),
+        status=VALUES(status),
+        path_resource=VALUES(path_resource),
+        remark=VALUES(remark),
+        add_by=VALUES(add_by),
+        update_by=VALUES(update_by),
+        project=VALUES(project),
+        module=VALUES(module)
+    </insert>
+
+    <!-- 批量更新状态 -->
+    <update id="updateBatch">
+        update test_mock_http_api_info_full set status = #{status} where url in
+        <foreach item="url" collection="list" open="(" separator="," close=")">
+            #{url}
+        </foreach>
+    </update>
+
+    <delete id="deleteBatch">
+        delete from test_mock_http_api_info_full where url in
+        <foreach item="url" collection="array" open="(" separator="," close=")">
+            #{url}
+        </foreach>
+    </delete>
+
+
+</mapper>

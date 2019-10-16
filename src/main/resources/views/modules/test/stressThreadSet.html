@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>菜单管理</title>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+	<link rel="stylesheet" href="../../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../../css/font-awesome.min.css">
+	<link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+	<link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+	<link rel="stylesheet" href="../../css/bootstrap-table.min.css">
+	<link rel="stylesheet" href="../../css/main.css">
+	<link rel="stylesheet" href="../../plugins/treegrid/jquery.treegrid.css">
+
+	<script src="../../libs/jquery.min.js"></script>
+	<script src="../../plugins/layer/layer.js"></script>
+	<script src="../../libs/bootstrap.min.js"></script>
+	<script src="../../libs/vue.min.js"></script>
+	<script src="../../libs/bootstrap-table.min.js"></script>
+	<script src="../../plugins/treegrid/jquery.treegrid.min.js"></script>
+	<script src="../../plugins/treegrid/jquery.treegrid.bootstrap3.js"></script>
+	<script src="../../plugins/treegrid/jquery.treegrid.extension.js"></script>
+	<script src="../../plugins/treegrid/tree.table.js"></script>
+	<script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+	<script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+	<script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+	<script src="../../js/common.js"></script>
+</head>
+<body>
+<div id="rrapp" v-cloak>
+	<div v-show="showList">
+		<div class="grid-btn">
+			<a v-if="hasPermission('test:teststressthreadset:save')" class="btn btn-primary" @click="add"><i class="fa fa-plus"></i>&nbsp;新增</a>
+			<a v-if="hasPermission('test:teststressthreadset:update')" class="btn btn-primary" @click="update"><i class="fa fa-pencil-square-o"></i>&nbsp;修改</a>
+			<a v-if="hasPermission('test:teststressthreadset:delete')" class="btn btn-primary" @click="del"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+		</div>
+		<table id="menuTable" data-mobile-responsive="true" data-click-to-select="true">
+			<thead>
+			<tr>
+				<th data-field="selectItem" data-checkbox="true"></th>
+			</tr>
+			</thead>
+		</table>
+	</div>
+
+	<div v-show="!showList" class="panel panel-default">
+		<div class="panel-heading">{{title}}</div>
+		<form class="form-horizontal">
+			<div class="form-group">
+				<div class="col-sm-2 control-label">类型</div>
+				<label class="radio-inline">
+					<input type="radio" name="type" value="0" disabled="true" v-model="menu.type"/> 脚本
+				</label>
+				<label class="radio-inline">
+					<input type="radio" name="type" value="1" disabled="true" v-model="menu.type"/> 线程组
+				</label>
+				<label class="radio-inline">
+					<input type="radio" name="type" value="2" disabled="true" v-model="menu.type"/> 配置项
+				</label>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-2 control-label">配置名称</div>
+				<div class="col-sm-10">
+					<input type="text" class="form-control" v-model="menu.name" placeholder="菜单名称或按钮名称"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-2 control-label">上级配置</div>
+				<div class="col-sm-10">
+					<input type="text" class="form-control" style="cursor:pointer;" v-model="menu.parentName" @click="menuTree" readonly="readonly" disabled="true" placeholder="一级菜单"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-2 control-label">配置项</div>
+				<div class="col-sm-10">
+					<input type="text" class="form-control" v-model="menu.key" readonly="readonly" placeholder="配置项"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-2 control-label">配置值</div>
+				<div class="col-sm-10">
+					<input v-if="menu.value != 'true' && menu.value != 'false'" type="text" class="form-control" v-model="menu.value" placeholder="配置项参数值"/>
+					<code v-if="menu.type == 0" style="margin-top:4px;">说明：模式多选要用;号分隔，备选项有：<br>TestPlan.tearDown_on_shutdown;<br>TestPlan.serialize_threadgroups;<br>TestPlan.functional_mode</code>
+					<label v-if="menu.value == 'true' || menu.value == 'false'" class="radio-inline">
+						<input type="radio" name="value" value="true" v-model="menu.value"/> true
+					</label>
+					<label  v-if="menu.value == 'true' || menu.value == 'false'" class="radio-inline">
+						<input type="radio" name="value" value="false" v-model="menu.value"/> false
+					</label>
+					<code v-if="menu.key == 'ThreadGroup.on_sample_error'">说明：该配置项备选值包括：(continue，startnextloop，stopthread，stoptest，stoptestnow)</code>
+					<code v-if="isNaN(menu.key) == false">以上所对应的值为 StartThreadsCount；InitialDelay(s)；StartupTime(s)；HoldLoadFor(s)；ShutdownTime</code>
+				</div>
+			</div>
+			
+			<div v-if="menu.type != 0" class="form-group">
+				<div class="col-sm-2 control-label">配置号</div>
+				<div class="col-sm-10">
+					<input type="number" class="form-control" v-model="menu.orderNum" readonly="readonly" placeholder="排序号"/>
+				</div>
+			</div>
+			<div v-if="menu.type != 2" class="form-group">
+				<div class="col-sm-2 control-label">说明</div>
+				<div class="col-sm-10">
+					<input type="text" class="form-control" v-model="menu.explain" readonly="readonly" placeholder="说明"/>
+					<code style="margin-top:4px;display: block;">对应脚本编号：<input type="text" v-model="menu.fileId" readonly="readonly"/></code>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-2 control-label"></div>
+				<input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>
+				&nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- 选择菜单 -->
+<div id="menuLayer" style="display: none;padding:10px;">
+	<ul id="menuTree" class="ztree"></ul>
+</div>
+
+
+<script src="../../js/modules/test/stressThreadSet.js"></script>
+</body>
+</html>

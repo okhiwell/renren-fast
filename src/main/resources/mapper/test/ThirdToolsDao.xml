@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.test.dao.ThirdToolsDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.test.entity.ThirdToolsEntity" id="thirdToolsMap">
+        <result property="toolsId" column="tools_id"/>
+        <result property="toolsName" column="tools_name"/>
+        <result property="toolsUrl" column="tools_url"/>
+        <result property="startCommand" column="startCommand"/>
+        <result property="status" column="status"/>
+        <result property="operator" column="operator"/>
+        <result property="tools_type" column="toolsType"/>
+        <result property="remark" column="remark"/>
+        <result property="addTime" column="add_time"/>
+        <result property="addBy" column="add_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="updateBy" column="update_by"/>
+    </resultMap>
+
+    
+    <select id="queryObject" resultType="io.renren.modules.test.entity.ThirdToolsEntity">
+        select * from toolsMoniter where tools_id = #{value}
+    </select>
+
+
+    
+    <select id="queryList" resultType="io.renren.modules.test.entity.ThirdToolsEntity">
+        select * from toolsMoniter
+        <where>
+            <if test="toolsName != null and toolsName.trim() != ''">
+                tools_name like concat('%', #{toolsName}, '%')
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by add_time desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null ">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+
+
+    <select id="queryListByType" resultType="io.renren.modules.test.entity.ThirdToolsEntity">
+        select * from toolsMoniter where tools_type = #{toolsType}
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by add_time desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null ">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+
+
+    
+    <select id="queryTotal" resultType="int">
+        select count(1) from toolsMoniter where status > -1
+        <if test="toolsType != null and toolsType.trim() != ''">
+            and tools_type = #{toolsType}
+        </if>
+        <if test="toolsName != null and toolsName.trim() != ''">
+            and tools_name like concat('%', #{toolsName}, '%')
+        </if>
+    </select>
+
+
+    <select id="queryTotalByType" resultType="int">
+        select count(1) from toolsMoniter where tools_type = #{toolsType}
+    </select>
+
+
+    
+    <insert id="save" parameterType="io.renren.modules.test.entity.ThirdToolsEntity" useGeneratedKeys="true"
+            keyProperty="toolsId">
+        insert into toolsMoniter
+        (
+        `tools_name`,
+        `tools_id`,
+        `tools_url`,
+        `status`,
+        `operator`,
+        `remark`,
+        `tools_type`,
+        `startCommand`
+        )
+        values
+        (
+        #{toolsName},
+        #{toolsId},
+        #{toolsUrl},
+        #{status},
+        #{operator},
+        #{remark},
+        #{toolsType},
+        #{startCommand}
+        )
+    </insert>
+    
+    <update id="update" parameterType="io.renren.modules.test.entity.ThirdToolsEntity">
+        update toolsMoniter
+        <set>
+            <if test="toolsName != null">`tools_name` = #{toolsName},</if>
+            <if test="toolsId != null">`tools_id` = #{toolsId},</if>
+            <if test="toolsUrl != null">`tools_url` = #{toolsUrl},</if>
+            <if test="status != null">`status` = #{status},</if>
+            <if test="operator != null">`operator` = #{operator},</if>
+            <if test="remark != null">`remark` = #{remark},</if>
+            <if test="toolsType != null">`tools_type` = #{toolsType},</if>
+            <if test="startCommand != null">`startCommand` = #{startCommand},</if>
+            <if test="updateBy != null">`update_by` = #{updateBy},</if>
+        </set>
+        where tools_id = #{toolsId}
+    </update>
+    
+    <delete id="deleteBatch">
+        delete from toolsMoniter where tools_id in
+        <foreach item="toolsId" collection="array" open="(" separator="," close=")">
+            #{toolsId}
+        </foreach>
+    </delete>
+
+</mapper>

@@ -1,0 +1,20 @@
+---
+- hosts: XXXXXXX
+  user: XXXXX
+
+  tasks:
+    - name: 删除jar包到目标机器（如果存在）
+      shell: rm -rf /data/renren-fast.jar
+      ignore_errors: true
+
+    - name: 拷贝jar包到目标机器
+      copy: src=./target/renren-fast.jar dest=/data/renren-fast.jar owner=root group=root mode=0755
+
+    - name: 关闭renrenfast进程
+      shell: ps -ef | grep renren-fast | grep jar | grep -v grep | awk '{print $2}' | xargs kill -9
+      ignore_errors: true
+
+    - name: 后台启动renren_fast
+      shell: nohup java -jar /data/renren-fast.jar >> /data/output.log  2>&1 &
+      async: 20
+      poll: 5

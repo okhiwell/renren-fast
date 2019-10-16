@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.test.dao.InterfaceTestDao">
+
+<!--	&lt;!&ndash; 可根据自己的需求，是否要使用 &ndash;&gt;-->
+<!--    <resultMap type="io.renren.modules.test.entity.InterfaceTestEntity" id="interfaceTestMap">-->
+<!--        <result property="caseId" column="case_id"/>-->
+<!--        <result property="caseName" column="case_name"/>-->
+<!--        <result property="project" column="project"/>-->
+<!--        <result property="module" column="module"/>-->
+<!--        <result property="apiType" column="api_type"/>-->
+<!--        <result property="status" column="status"/>-->
+<!--        <result property="operator" column="operator"/>-->
+<!--        <result property="remark" column="remark"/>-->
+<!--        <result property="priority" column="priority"/>-->
+<!--        <result property="caseDir" column="case_dir"/>-->
+<!--        <result property="baseDir" column="base_dir"/>-->
+<!--        <result property="addTime" column="add_time"/>-->
+<!--        <result property="addBy" column="add_by"/>-->
+<!--        <result property="updateTime" column="update_time"/>-->
+<!--        <result property="updateBy" column="update_by"/>-->
+<!--    </resultMap>-->
+    
+
+    <select id="queryObject" resultType="io.renren.modules.test.entity.InterfaceTestEntity">
+        select * from test_api_case where case_id = #{value}
+    </select>
+
+    <select id="queryByApiType" resultType="io.renren.modules.test.entity.InterfaceTestEntity">
+        select * from test_api_case where api_type = #{apiType}
+    </select>
+
+
+    <select id="queryList" resultType="io.renren.modules.test.entity.InterfaceTestEntity">
+        select * from test_api_case
+        <where>
+            <if test="caseName != null and caseName.trim() != ''">
+                case_name like concat('%', #{caseName}, '%')
+            </if>
+            <if test="project != null and project.trim() != ''">
+                project like concat('%', #{project}, '%')
+            </if>
+            <if test="module != null and module.trim() != ''">
+                module like concat('%', #{module}, '%')
+            </if>
+            <if test="apiType != null and apiType.trim() != ''">
+                api_type like concat('%', #{apiType}, '%')
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by add_time desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null ">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        select count(1) from test_api_case
+        <where>
+            <if test="caseName != null and caseName.trim() != ''">
+                case_name like concat('%', #{caseName}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="queryTotalByApiType" resultType="int">
+        select count(1) from test_api_case where api_type = #{apiType}
+    </select>
+
+
+
+    <insert id="save" parameterType="io.renren.modules.test.entity.InterfaceTestEntity" useGeneratedKeys="true"
+            keyProperty="caseId">
+        insert into test_api_case
+        (
+        `case_name`,
+        `project`,
+        `module`,
+        `status`,
+        `operator`,
+        `remark`,
+        `priority`,
+        `case_dir`,
+        `api_type`,
+        `base_dir`,
+        `add_by`
+        )
+        values
+        (
+        #{caseName},
+        #{project},
+        #{module},
+        #{status},
+        #{operator},
+        #{remark},
+        #{priority},
+        #{caseDir},
+        #{apiType},
+        #{baseDir},
+        #{addBy}
+        )
+    </insert>
+
+    <update id="update" parameterType="io.renren.modules.test.entity.InterfaceTestEntity">
+        update test_api_case
+        <set>
+            <if test="caseName != null">`case_name` = #{caseName},</if>
+            <if test="project != null">`project` = #{project},</if>
+            <if test="module != null">`module` = #{module},</if>
+            <if test="status != null">`status` = #{status},</if>
+            <if test="operator != null">`operator` = #{operator},</if>
+            <if test="remark != null">`remark` = #{remark},</if>
+            <if test="priority != null">`priority` = #{priority},</if>
+            <if test="caseDir != null">`case_dir` = #{caseDir},</if>
+            <if test="baseDir != null">`base_dir` = #{baseDir},</if>
+            <if test="updateBy != null">`update_by` = #{updateBy},</if>
+            <if test="apiType != null">`api_type` = #{apiType},</if>
+        </set>
+        where case_id = #{caseId}
+    </update>
+
+    <!-- 批量更新状态 -->
+    <update id="updateBatch">
+        update test_api_case set status = #{status} where case_id in
+        <foreach item="caseId" collection="list" open="(" separator="," close=")">
+            #{caseId}
+        </foreach>
+    </update>
+
+    <delete id="deleteBatch">
+        delete from test_api_case where case_id in
+        <foreach item="caseId" collection="array" open="(" separator="," close=")">
+            #{caseId}
+        </foreach>
+    </delete>
+
+</mapper>

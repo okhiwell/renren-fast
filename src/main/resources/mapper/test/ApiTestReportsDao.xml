@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.test.dao.ApiTestReportsDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.test.entity.ApiTestReportsEntity" id="testApiCaseReportsMap">
+        <result property="reportId" column="report_id"/>
+        <result property="caseId" column="case_id"/>
+        <result property="fileId" column="file_id"/>
+        <result property="originName" column="origin_name"/>
+        <result property="reportName" column="report_name"/>
+        <result property="fileSize" column="file_size"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
+        <result property="addTime" column="add_time"/>
+        <result property="addBy" column="add_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="updateBy" column="update_by"/>
+    </resultMap>
+
+
+
+    <select id="queryObject" resultType="io.renren.modules.test.entity.ApiTestReportsEntity" >
+        select * from test_api_case_reports where report_id = #{value}
+    </select>
+
+    <select id="queryList" resultType="io.renren.modules.test.entity.ApiTestReportsEntity" >
+        select * from test_api_case_reports
+        <where>
+            <if test="caseId != null and caseId.trim() != ''">
+                case_id = #{caseId}
+            </if>
+            <if test="originName != null and originName.trim() != ''">
+                origin_name = #{originName}
+            </if>
+            <if test="reportName != null and reportName.trim() != ''">
+                report_name = #{reportName}
+            </if>
+            <if test="reportId != null and reportId.trim() != ''">
+                report_id = #{reportId}
+            </if>
+            <if test="fileId != null and fileId.trim() != ''">
+                file_id = #{fileId}
+            </if>
+        </where>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by add_time desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null ">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        select count(1) from test_api_case_reports
+        <where>
+            <if test="caseId != null and caseId.trim() != ''">
+                case_id = #{caseId}
+            </if>
+        </where>
+    </select>
+
+    <delete id="deleteBatchByCaseIds">
+        delete from test_api_case_reports where case_id in
+        <foreach item="caseIds" collection="array" open="(" separator="," close=")">
+            #{caseIds}
+        </foreach>
+    </delete>
+
+    <insert id="save" parameterType="io.renren.modules.test.entity.ApiTestReportsEntity" useGeneratedKeys="true" keyProperty="reportId">
+        insert into test_api_case_reports
+        (
+        `case_id`,
+        `file_id`,
+        `origin_name`,
+        `report_name`,
+        `file_size`,
+        `remark`,
+        `add_by`
+        )
+        values
+        (
+        #{caseId},
+        #{fileId},
+        #{originName},
+        #{reportName},
+        #{fileSize},
+        #{remark},
+        #{addBy}
+        )
+    </insert>
+
+    <update id="update" parameterType="io.renren.modules.test.entity.ApiTestReportsEntity">
+        update test_api_case_reports
+        <set>
+            <if test="caseId != null">`case_id` = #{caseId}, </if>
+            <if test="fileId != null">`file_id` = #{fileId}, </if>
+            <if test="originName != null">`origin_name` = #{originName}, </if>
+            <if test="reportName != null">`report_name` = #{reportName}, </if>
+            <if test="fileSize != null">`file_size` = #{fileSize}, </if>
+            <if test="status != null">`status` = #{status}, </if>
+            <if test="remark != null">`remark` = #{remark}, </if>
+            <if test="updateBy != null">`update_by` = #{updateBy} </if>
+        </set>
+        where report_id = #{reportId}
+    </update>
+
+    <!--&lt;!&ndash; 批量更新xx &ndash;&gt;-->
+    <!--<update id="updateBatch">-->
+    <!--update test_stress_case set status = #{status} where case_id in-->
+    <!--<foreach item="caseId" collection="list"  open="(" separator="," close=")">-->
+    <!--#{caseId}-->
+    <!--</foreach>-->
+    <!--</update>-->
+
+    <delete id="deleteBatch">
+        delete from test_api_case_reports where report_id in
+        <foreach item="reportIds" collection="array" open="(" separator="," close=")">
+            #{reportIds}
+        </foreach>
+    </delete>
+
+    <delete id="delete">
+        delete from test_api_case_reports where report_id = #{reportId}
+    </delete>
+
+
+</mapper>

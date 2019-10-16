@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>日志展示</title>
+    <script src="https://cdn.bootcss.com/jquery/2.1.4/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>
+    <script src="https://cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+<button onclick="openSocket()">开启日志</button><button onclick="closeSocket()">关闭日志</button>
+<div id="log-container" style="height: 450px; overflow-y: scroll; background: #333; color: #aaa; padding: 10px;">
+    <div></div>
+</div>
+</body>
+<script>
+    var stompClient = null;
+    $(document).ready(function() {openSocket();});
+    function openSocket() {
+        if(stompClient==null){
+            var socket = new WebSocket('ws://localhost:2728/logwebsocket');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function(frame) {
+                setConnected(true);
+                stompClient.subscribe('/topic/pullLogger', function(event) {
+                    var content=JSON.parse(event.body);
+                     var leverhtml = '';
+                     var className = '<span class="classnametext">' + content.className + '</span>';
+                     switch (content.level) {
+                         case 'INFO':
+                             leverhtml = '<span class="infotext">' + content.level + '</span>';
+                             break;
+                         case 'DEBUG':
+                             leverhtml = '<span class="debugtext">' + content.level + '</span>';
+                             break;
+                         case 'WARN':
+                             leverhtml = '<span class="warntext">' + content.level + '</span>';
+                             break;
+                         case 'ERROR':
+                             leverhtml = '<span class="errortext">' + content.level + '</span>';
+                             break;
+                     }
+                     $("#log-container div").append("<p class='logp'>" + content.timestamp + " " + leverhtml + " --- [" + content.threadName + "] " + className + " ：" + content.body + "</p>");
+                     if (content.exception != "") {
+                         $("#log-container div").append("<p class='logp'>" + content.exception + "</p>");
+                     }
+                     if (content.cause != "") {
+                         $("#log-container div").append("<p class='logp'>" + content.cause + "</p>");
+                     }
+                     $("#log-container").scrollTop($("#log-container div").height() - $("#log-container").height());
+                });
+            });
+        }
+    }
+    function closeSocket() {
+        if (stompClient != null) {
+            stompClient.disconnect();
+            stompClient=null;
+        }
+    }
+</script>
+<!--<script src="../../js/modules/test/logShow.js"></script>-->
+<!--$("#log-container div").append(content.timestamp +" "+ content.level+" -&#45;&#45; ["+ content.threadName+"] "+ content.className+"   :"+content.body).append("<br/>");-->
+</body>
+</html>

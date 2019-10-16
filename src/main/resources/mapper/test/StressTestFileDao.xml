@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.test.dao.StressTestFileDao">
+
+    <select id="queryObject" resultType="io.renren.modules.test.entity.StressTestFileEntity">
+        select * from test_stress_case_file where file_id = #{value}
+    </select>
+
+    <select id="queryObjectForClone" resultType="io.renren.modules.test.entity.StressTestFileEntity">
+        select * from test_stress_case_file where status = -1
+        <if test="slaveId != null">
+            and slave_id = #{slaveId}
+        </if>
+        <if test="originName != null and originName.trim() != ''">
+            and origin_name like concat('', #{originName}, '%')
+        </if>
+    </select>
+
+    <select id="queryList" resultType="io.renren.modules.test.entity.StressTestFileEntity">
+--         select * from test_stress_case_file where status > -1
+        SELECT t1.*, t2.case_name FROM test_stress_case_file t1, test_stress_case t2 where t1.status > -1 and t1.case_id = t2.case_id
+        <if test="caseId != null and caseId.trim() != ''">
+            and t1.case_id = #{caseId}
+        </if>
+        <if test="originName != null and originName.trim() != ''">
+            and t1.origin_name like concat('%', #{originName}, '%')
+        </if>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by t1.add_time desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null ">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryListForDelete" resultType="io.renren.modules.test.entity.StressTestFileEntity">
+        select * from test_stress_case_file where status = -1
+        <if test="originName != null and originName.trim() != ''">
+            and origin_name like concat('', #{originName}, '%')
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        select count(1) from test_stress_case_file where status > -1
+        <if test="caseId != null and caseId.trim() != ''">
+            and case_id = #{caseId}
+        </if>
+    </select>
+
+    <delete id="deleteBatchByCaseIds">
+        delete from test_stress_case_file where case_id in
+        <foreach item="caseIds" collection="array" open="(" separator="," close=")">
+            #{caseIds}
+        </foreach>
+    </delete>
+
+    <insert id="save" parameterType="io.renren.modules.test.entity.StressTestFileEntity" useGeneratedKeys="true"
+            keyProperty="fileId">
+        insert into test_stress_case_file
+        (
+        `case_id`,
+        `slave_id`,
+        `status`,
+        `origin_name`,
+        `file_name`,
+        `file_md5`,
+        `add_by`
+        )
+        values
+        (
+        #{caseId},
+        #{slaveId},
+        #{status},
+        #{originName},
+        #{fileName},
+        #{fileMd5},
+        #{addBy}
+        )
+    </insert>
+
+    <update id="update" parameterType="io.renren.modules.test.entity.StressTestFileEntity">
+        update test_stress_case_file
+        <set>
+            <if test="caseId != null">`case_id` = #{caseId},</if>
+            <if test="slaveId != null">`slave_id` = #{slaveId},</if>
+            <if test="originName != null">`origin_name` = #{originName},</if>
+            <if test="fileName != null">`file_name` = #{fileName},</if>
+            <if test="fileMd5 != null">`file_md5` = #{fileMd5},</if>
+            <if test="status != null">`status` = #{status},</if>
+            <if test="reportStatus != null">`report_status` = #{reportStatus},</if>
+            <if test="webchartStatus != null">`webchart_status` = #{webchartStatus},</if>
+            <if test="debugStatus != null">`debug_status` = #{debugStatus},</if>
+            <if test="updateBy != null">`update_by` = #{updateBy}</if>
+            <if test="addTime != null">`add_time` = #{addTime}</if>
+        </set>
+        where file_id = #{fileId}
+    </update>
+
+    <update id="updateStatusBatch">
+        update test_stress_case_file
+        <set>
+            <if test="reportStatus != null">`report_status` = #{reportStatus},</if>
+            <if test="webchartStatus != null">`webchart_status` = #{webchartStatus},</if>
+            <if test="debugStatus != null">`debug_status` = #{debugStatus},</if>
+            <if test="updateBy != null">`update_by` = #{updateBy}</if>
+        </set>
+        where file_id in
+        <foreach item="fileIdList" collection="fileIdList" open="(" separator="," close=")">
+            #{fileIdList}
+        </foreach>
+    </update>
+
+    <!--&lt;!&ndash; 批量更新xx &ndash;&gt;-->
+    <!--<update id="updateBatch">-->
+    <!--update test_stress_case set status = #{status} where case_id in-->
+    <!--<foreach item="caseId" collection="list"  open="(" separator="," close=")">-->
+    <!--#{caseId}-->
+    <!--</foreach>-->
+    <!--</update>-->
+
+    <delete id="deleteBatch">
+        delete from test_stress_case_file where file_id in
+        <foreach item="fileIds" collection="array" open="(" separator="," close=")">
+            #{fileIds}
+        </foreach>
+    </delete>
+
+</mapper>

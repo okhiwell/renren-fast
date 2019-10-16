@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.test.dao.TestStressThreadSetDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <!--<resultMap type="io.renren.modules.test.entity.TestStressThreadSetEntity" id="testStressThreadSetMap">
+        <result property="setId" column="set_id"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="name" column="name"/>
+        <result property="key" column="key"/>
+        <result property="value" column="value"/>
+        <result property="type" column="type"/>
+        <result property="explain" column="explain"/>
+        <result property="orderNum" column="order_num"/>
+        <result property="fileId" column="file_id"/>
+    </resultMap>-->
+
+	<select id="queryObject" resultType="io.renren.modules.test.entity.TestStressThreadSetEntity">
+		select * from test_stress_thread_set where set_id = #{value}
+	</select>
+    <select id="queryListParentId" resultType="io.renren.modules.test.entity.TestStressThreadSetEntity">
+		select * from test_stress_thread_set where parent_id = #{parentId} order by order_num asc 
+	</select>
+	
+	<select id="queryNotSetList" resultType="io.renren.modules.test.entity.TestStressThreadSetEntity">
+		select * from test_stress_thread_set where type != 2 order by order_num asc 
+	</select>
+	
+	<select id="queryList" resultType="io.renren.modules.test.entity.TestStressThreadSetEntity">
+		select m.*,(select p.name from test_stress_thread_set p where p.set_id = m.parent_id) as parentName 
+			from test_stress_thread_set m
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by m.${sidx} ${order}
+            </when>
+			<otherwise>
+                order by m.order_num asc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+	<select id="queryListByFileId" resultType="io.renren.modules.test.entity.TestStressThreadSetEntity">
+ 		select * from test_stress_thread_set where file_id = #{fileId}
+         order by order_num asc
+    </select>
+	
+ 	<select id="queryTotal" resultType="int">
+		select count(*) from test_stress_thread_set 
+	</select>
+	 
+	<insert id="save" parameterType="io.renren.modules.test.entity.TestStressThreadSetEntity">
+		insert into test_stress_thread_set
+		(
+			`set_id`, 
+			`parent_id`, 
+			`name`, 
+			`key`, 
+			`value`, 
+			`type`, 
+			`explain`, 
+			`order_num`, 
+			`file_id`
+		)
+		values
+		(
+			#{setId}, 
+			#{parentId}, 
+			#{name}, 
+			#{key}, 
+			#{value}, 
+			#{type}, 
+			#{explain}, 
+			#{orderNum}, 
+			#{fileId}
+		)
+	</insert>
+	
+	<insert id="saveBatch" parameterType="io.renren.modules.test.entity.TestStressThreadSetEntity">
+		insert into test_stress_thread_set
+		(
+			`set_id`, 
+			`parent_id`, 
+			`name`, 
+			`key`, 
+			`value`, 
+			`type`, 
+			`explain`, 
+			`order_num`, 
+			`file_id`
+		)
+        values
+        <foreach collection="list"  separator="," item="item">
+            (#{item.setId,jdbcType=VARCHAR},
+             #{item.parentId,jdbcType=VARCHAR},
+             #{item.name,jdbcType=VARCHAR},
+             #{item.key,jdbcType=VARCHAR},
+             #{item.value,jdbcType=VARCHAR},
+             #{item.type,jdbcType=INTEGER},
+             #{item.explain,jdbcType=VARCHAR},
+             #{item.orderNum,jdbcType=INTEGER},
+             #{item.fileId,jdbcType=VARCHAR})
+        </foreach>
+	</insert>
+	 
+	<update id="update" parameterType="io.renren.modules.test.entity.TestStressThreadSetEntity">
+		update test_stress_thread_set 
+		<set>
+			<if test="parentId != null">`parent_id` = #{parentId}, </if>
+			<if test="name != null">`name` = #{name}, </if>
+			<if test="key != null">`key` = #{key}, </if>
+			<if test="value != null">`value` = #{value}, </if>
+			<if test="type != null">`type` = #{type}, </if>
+			<if test="explain != null">`explain` = #{explain}, </if>
+			<if test="orderNum != null">`order_num` = #{orderNum}, </if>
+			<if test="fileId != null">`file_id` = #{fileId}</if>
+		</set>
+		where set_id = #{setId}
+	</update>
+	
+	<delete id="delete">
+		delete from test_stress_thread_set where set_id = #{value}
+	</delete>
+	
+	<delete id="deleteBatch">
+		delete from test_stress_thread_set where set_id in 
+		<foreach item="setId" collection="array" open="(" separator="," close=")">
+			#{setId}
+		</foreach>
+	</delete>
+	
+	<delete id="deleteByFileId">
+		delete from test_stress_thread_set where file_id = #{value}
+	</delete>
+	
+	<delete id="deleteBatchByFileIds">
+        delete from test_stress_thread_set where file_id in
+        <foreach item="fileIds" collection="array" open="(" separator="," close=")">
+            #{fileIds}
+        </foreach>
+    </delete>
+
+</mapper>

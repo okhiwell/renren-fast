@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.test.dao.FireworkInformationDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.test.entity.FireworkInformationEntity" id="fireworkInformationMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="privateip" column="privateip"/>
+        <result property="publicip" column="publicip"/>
+        <result property="use" column="use"/>
+        <result property="zoneid" column="zoneid"/>
+        <result property="cpu" column="cpu"/>
+        <result property="memory" column="memory"/>
+        <result property="datadisk" column="datadisk"/>
+        <result property="time" column="time"/>
+    </resultMap>
+    
+
+    <select id="queryObject" resultType="io.renren.modules.test.entity.FireworkInformationEntity" >
+        select * from firework_information where id = #{value}
+    </select>
+    
+    
+    <select id="queryObjectFromAllIP" resultType="io.renren.modules.test.entity.FireworkInformationEntity" >
+        select * from firework_information where privateip = #{vip} or publicip = #{vip}
+    </select>
+    
+    
+    
+    <select id="queryList" resultType="io.renren.modules.test.entity.FireworkInformationEntity" >
+        select * from firework_information
+        <where>
+            <if test="publicip != null and publicip.trim() != ''">
+                publicip in ( #{publicip} )
+            </if>
+            <if test="privateip != null and privateip.trim() != ''">
+                privateip in ( #{privateip} )
+            </if>
+        </where>
+        <if test="sidx != null and sidx.trim() != ''">
+            order by ${sidx} ${order}
+        </if>
+        <if test="offset != null and limit != null ">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+    
+    <select id="queryTotal" resultType="int">
+        select count(1) from firework_information
+    </select>
+    
+    <insert id="save" parameterType="io.renren.modules.test.entity.FireworkInformationEntity" useGeneratedKeys="true" keyProperty="ip">
+        insert into firework_information
+        (
+        `name`,
+        `privateip`,
+        `publicip`,
+        `use`
+        )
+        values
+        (
+        #{name},
+        #{privateip},
+        #{publicip},
+        #{use}
+        )
+    </insert>
+
+    
+    <update id="update" parameterType="io.renren.modules.test.entity.FireworkInformationEntity">
+        update firework_information
+        <set>
+            <if test="privateip != null">`privateip` = #{privateip}, </if>
+            <if test="publicip != null">`publicip` = #{publicip}, </if>
+            <if test="name != null">`name` = #{name}, </if>
+            <if test="zoneid != null">`zoneid` = #{zoneid}, </if>
+            <if test="use != null">`use` = #{use}, </if>
+            <if test="cpu != null">`cpu` = #{cpu}, </if>
+            <if test="memory != null">`memory` = #{memory}, </if>
+            <if test="datadisk != null">`datadisk` = #{datadisk}, </if>
+        </set>
+        where privateip = #{privateip} or publicip = #{publicip}
+    </update>
+    
+    <!-- 批量更新状态 -->
+    <update id="updateBatch">
+        update firework_information set rootPassword = #{rootPassword} where privateip in
+        <foreach item="ip" collection="list"  open="(" separator="," close=")">
+            #{ip}
+        </foreach>
+    </update>
+    
+    
+    <delete id="deleteBatch">
+        delete from firework_information where privateip in
+        <foreach item="ip" collection="array" open="(" separator="," close=")">
+            #{ip}
+        </foreach>
+    </delete>
+
+</mapper>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>接口接口</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="../../plugins/fileinput/css/fileinput.min.css"/>
+    <script src="../../libs/jquery.min.js"></script>
+    <script src="../../plugins/layer/layer.js"></script>
+    <script src="../../libs/bootstrap.min.js"></script>
+    <script src="../../libs/vue.min.js"></script>
+    <script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+    <script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+    <script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+    <script src="../../libs/ajaxupload.js"></script>
+    <script src="../../js/common.js"></script>
+    <script type="text/javascript" src="../../plugins/fileinput/js/fileinput.min.js"></script>
+    <script type="text/javascript" src="../../plugins/fileinput/js/locales/zh.js"></script>
+</head>
+<body>
+<div id="rrapp" v-cloak>
+    <div v-show="showList">
+        <div class="grid-btn" style="height:34px;">
+            <div class="form-group col-sm-2">
+                <input type="text" class="form-control" v-model="q.method" @keyup.enter="query" placeholder="接口类型">
+            </div>
+            <a class="btn btn-default" @click="query">查询</a>
+            <a v-if="hasPermission('test:api')" class="btn btn-primary" @click="add"><i class="fa fa-plus"></i>&nbsp;新增</a>
+            <a v-if="hasPermission('test:api')" class="btn btn-primary" @click="update"><i class="fa fa-pencil-square-o"></i>&nbsp;修改</a>
+            <a v-if="hasPermission('test:api')" class="btn btn-primary" @click="del"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+            <a v-if="hasPermission('test:api')" class="btn btn-primary" @click="valid"><i class="fa fa-pencil-square-o"></i>&nbsp;校验</a>
+            <a v-if="hasPermission('test:api')" class="btn btn-primary" @click="genrateconffile"><i class="fa fa-pencil-square-o"></i>&nbsp;配置生效</a>
+            <a v-if="hasPermission('test:api')" class="btn btn-primary" @click="delfile"><i class="fa fa-trash-o"></i>&nbsp;删除无效配置</a>
+            <a v-if="hasPermission('test:api')" class='btn btn-primary' @click="exportconfile"><i class='fa fa-download'></i>&nbsp;导出配置</a>
+            <a v-if="hasPermission('test:api')" class='btn btn-primary' @click="exportpdfile"><i class='fa fa-download'></i>&nbsp;导出接口文档</a>
+<!--            <a href='http://localhost:2728/test/mock/export/confile' class='btn btn-primary'><i class='fa fa-download'></i>&nbsp;下载1</a>-->
+<!--            <a href='http://localhost:2728/test/mock/export/docfile' class='btn btn-primary'><i class='fa fa-download'></i>&nbsp;下载2</a>-->
+        </div>
+        <table id="jqGrid"></table>
+        <div id="jqGridPager"></div>
+        <div style="text-align:center;padding-top:16px;">（说明：基于http协议的接口mock，使用检验功能是只能够选中单条记录进行校验）</div>
+
+    </div>
+
+    <div v-show="showEdit" class="panel panel-default">
+<!--        <div class="panel-heading">{{title}}</div>-->
+        <form class="form-horizontal">
+            <div class="form-group">
+                <div class="col-sm-2 control-label">项目名称</div>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" v-model="testMockApiinfofull.project" placeholder="项目名称"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">模块名称</div>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" v-model="testMockApiinfofull.module" placeholder="模块名称"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">接口路径</div>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" v-model="testMockApiinfofull.url" placeholder="url"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">方法类型</div>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" v-model="testMockApiinfofull.method" placeholder="method:get/post/delete/put"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">请求头</div>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" v-model="testMockApiinfofull.headers" placeholder="header"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">cookies信息</div>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" v-model="testMockApiinfofull.cookies" placeholder="cookies"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">xpaths信息</div>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" v-model="testMockApiinfofull.xpaths" placeholder="xpaths"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">表单信息</div>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" v-model="testMockApiinfofull.forms" placeholder="forms"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">请求参数</div>
+                <div class="col-sm-10">
+                    <textarea class="form-control" v-model="testMockApiinfofull.queries" rows="6" placeholder="请求参数拼接信息">
+                    </textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">Json格式响应</div>
+                <div class="col-sm-10">
+                    <textarea class="form-control" v-model="testMockApiinfofull.json" rows="6" placeholder="response">
+                    </textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">描述</div>
+                <div class="col-sm-10">
+                    <textarea class="form-control" v-model="testMockApiinfofull.remark" rows="6" placeholder="response">
+                    </textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-2 control-label"></div>
+                <input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>
+                <input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../../js/modules/test/apiMockTest.js"></script>
+</body>
+</html>

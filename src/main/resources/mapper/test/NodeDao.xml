@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.test.dao.NodeDao">
+
+
+    <select id="queryObject" resultType="io.renren.modules.test.entity.NodeEntity" >
+        select * from firework_environment where realip LIKE CONCAT('%',#{value},'%')  limit 1
+    </select>
+
+
+    <select id="queryObjectFromVIP" resultType="io.renren.modules.test.entity.NodeEntity" >
+        select * from firework_environment where realip = #{vip} or vip = #{vip}
+    </select>
+
+
+
+    <select id="queryList" resultType="io.renren.modules.test.entity.NodeEntity" >
+        select * from firework_environment
+        <where>
+            <if test="vip != null and vip.trim() != ''">
+                vip like concat('%', #{vip}, '%') or vip in ( #{vip} )
+            </if>
+            <if test="realip != null and realip.trim() != ''">
+                realip like concat('%', #{realip}, '%') or realip in ( #{realip} )
+            </if>
+        </where>
+        <if test="sidx != null and sidx.trim() != ''">
+            order by ${sidx} ${order}
+        </if>
+        <if test="offset != null and limit != null ">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        select count(1) from firework_environment
+        <where>
+            <if test="realip != null and realip.trim() != ''">
+                realip like concat('%', #{realip}, '%')
+            </if>
+        </where>
+    </select>
+
+    <insert id="save" parameterType="io.renren.modules.test.entity.NodeEntity" useGeneratedKeys="true" keyProperty="realip">
+        insert into firework_environment
+        (
+        `realip`,
+        `username`,
+        `password`,
+        `port`,
+        `description`,
+        `vip`,
+        `rootpassword`
+        )
+        values
+        (
+        #{realip},
+        #{userName},
+        #{password},
+        #{port},
+        #{description},
+        #{vip},
+        #{rootPassword}
+        )
+    </insert>
+
+    <update id="update" parameterType="io.renren.modules.test.entity.NodeEntity">
+        update firework_environment
+        <set>
+            <if test="realip != null">`realip` = #{realip}, </if>
+            <if test="userName != null">`username` = #{userName}, </if>
+            <if test="password != null">`password` = #{password}, </if>
+            <if test="port != null">`port` = #{port}, </if>
+            <if test="vip != null">`vip` = #{vip}, </if>
+            <if test="rootPassword != null">`rootpassword` = #{rootPassword}, </if>
+            <if test="description != null">`description` = #{description}, </if>
+        </set>
+        where realip = #{realip}
+    </update>
+
+
+    <insert id="insertOrUpdate" parameterType="io.renren.modules.test.entity.NodeEntity" useGeneratedKeys="true" keyProperty="realip">
+        insert into firework_environment
+        (
+        `realip`,
+        `username`,
+        `password`,
+        `port`,
+        `description`,
+        `vip`,
+        `rootpassword`
+        )
+        values
+        (
+        #{realip},
+        #{userName},
+        #{password},
+        #{port},
+        #{description},
+        #{vip},
+        #{rootPassword}
+        )
+        ON DUPLICATE KEY UPDATE
+        realip=VALUES(realip),
+        username=VALUES(username),
+        password=VALUES(password),
+        port=VALUES(port),
+        description=VALUES(description),
+        vip=VALUES(vip),
+        rootpassword=VALUES(rootpassword)
+    </insert>
+
+
+    <!-- 批量更新状态 -->
+    <update id="updateBatch">
+        update firework_environment set rootPassword = #{rootPassword} where realip in
+        <foreach item="realip" collection="list"  open="(" separator="," close=")">
+            #{realip}
+        </foreach>
+    </update>
+
+
+    <delete id="deleteBatch">
+        delete from firework_environment where realip in
+        <foreach item="realip" collection="array" open="(" separator="," close=")">
+            #{realip}
+        </foreach>
+    </delete>
+
+</mapper>

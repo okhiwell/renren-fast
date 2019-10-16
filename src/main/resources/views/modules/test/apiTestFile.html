@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>接口测试用例文件</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../plugins/jqgrid/ui.jqgrid-bootstrap.css">
+    <link rel="stylesheet" href="../../plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../../css/main.css">
+    <script src="../../libs/jquery.min.js"></script>
+    <script src="../../plugins/layer/layer.js"></script>
+    <script src="../../libs/bootstrap.min.js"></script>
+    <script src="../../libs/vue.min.js"></script>
+    <script src="../../plugins/jqgrid/grid.locale-cn.js"></script>
+    <script src="../../plugins/jqgrid/jquery.jqGrid.min.js"></script>
+    <script src="../../plugins/ztree/jquery.ztree.all.min.js"></script>
+    <script src="../../js/common.js"></script>
+    <script src="../../plugins/echarts/echarts.min.js"></script>
+    <script src="../../plugins/echarts/theme.js"></script>
+    <script>
+        var arrayNation = new Array('127.0.0.0.1','localhost');
+        function createSelect(name, str){
+            var _select = document.createElement("select");
+            var firstOption = document.createElement("option");
+            firstOption.value = "------select------";
+            firstOption.text = "------请选择------";
+            _select.appendChild(firstOption);
+            for ( i = 0; i < str.length; i++){
+                var _option = document.createElement("option");
+                _option.value = str[i];
+                _option.text = str[i];
+                if (name == str[i]){
+                    _option.selected = "true";
+                }
+                _select.appendChild(_option);
+            }
+            return _select;
+        }
+    </script>
+</head>
+<body>
+<div id="rrapp">
+    <div v-show="showList">
+        <div class="grid-btn">
+            <div class="form-group col-sm-2">
+                <input type="text" class="form-control" v-model="q.originName" @keyup.enter="query" placeholder="用例原文件">
+            </div>
+            <a class="btn btn-default" @click="query">查询</a>
+            <a v-if="hasPermission('test:stress')" class="btn btn-primary" @click="del"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+            <a v-if="hasPermission('test:stress')" class="btn btn-primary" @click="stop"><i class="fa fa-stop-circle"></i>&nbsp;停止</a>
+            <a v-if="hasPermission('test:stress')" class="btn btn-primary" @click="run"><i class="fa fa-stop-circle"></i>&nbsp;运行</a>
+<!--            <a id="selectip">测试机器IP：</a>-->
+<!--            <script>-->
+<!--                document.getElementById("selectip").appendChild(createSelect('127.0.0.1', arrayNation));-->
+<!--            </script>-->
+
+            <label for="local">127.0.0.1</label>
+            <input type="radio" name="env" value="127.0.0.1" id="local"  />
+            <label for="remote">localhost</label>
+            <input type="radio" name="env" id="remote" value="localhost" checked />
+        </div>
+        <table id="jqGrid"></table>
+        <div id="jqGridPager"></div>
+
+        <table id="jqGridNode"></table>
+        <div id="jqGridPagerNode"></div>
+
+    </div>
+<!--    <div v-show="showEdit" class="panel panel-default">-->
+<!--        <div class="panel-heading">{{title}}</div>-->
+<!--        <form class="form-horizontal">-->
+<!--            <div class="form-group">-->
+<!--                <div class="col-sm-2 control-label">节点IP</div>-->
+<!--                <div class="col-sm-10">-->
+<!--                    <input type="text" class="form-control" v-model="node.ip" placeholder="127.0.0.1"/>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="form-group">-->
+<!--                <div class="col-sm-2 control-label">VIP</div>-->
+<!--                <div class="col-sm-10">-->
+<!--                    <input type="text" class="form-control" v-model="node.vip" placeholder="localhost"/>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="form-group">-->
+<!--                <div class="col-sm-2 control-label">用户名</div>-->
+<!--                <div class="col-sm-10">-->
+<!--                    <input type="text" class="form-control" v-model="node.userName" placeholder="用户名"/>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="form-group">-->
+<!--                <div class="col-sm-2 control-label">密码</div>-->
+<!--                <div class="col-sm-10">-->
+<!--                    <input type="text" class="form-control" v-model="node.password" placeholder="密码"/>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="form-group">-->
+<!--                <div class="col-sm-2 control-label">root密码</div>-->
+<!--                <div class="col-sm-10">-->
+<!--                    <input type="text" class="form-control" v-model="node.rootPassword" placeholder="root密码"/>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="form-group">-->
+<!--                <div class="col-sm-2 control-label">端口</div>-->
+<!--                <div class="col-sm-10">-->
+<!--                    <input type="text" class="form-control" v-model="node.port" placeholder="22"/>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="form-group">-->
+<!--                <div class="col-sm-2 control-label">描述</div>-->
+<!--                <div class="col-sm-10">-->
+<!--                    <textarea class="form-control" v-model="node.description" rows="6" placeholder="描述">-->
+<!--                    </textarea>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="form-group">-->
+<!--                <div class="col-sm-2 control-label"></div>-->
+<!--                <input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>-->
+<!--                <input type="button" class="btn btn-warning" @click="reloadnode" value="返回"/>-->
+<!--            </div>-->
+<!--        </form>-->
+<!--    </div>-->
+</div>
+
+<script src="../../js/modules/test/apiTestFile.js"></script>
+</body>
+</html>
